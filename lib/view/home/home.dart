@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -10,6 +12,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  String categoryType = "foods";
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -74,152 +77,127 @@ class _HomeState extends State<Home> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    categoryButton(FontAwesomeIcons.utensils, "Foods"),
-                    categoryButton(FontAwesomeIcons.mugHot, "Drinks"),
-                    categoryButton(FontAwesomeIcons.solidLemon, "Fruits")
+                    categoryButton(FontAwesomeIcons.utensils, "Foods", "foods"),
+                    categoryButton(FontAwesomeIcons.mugHot, "Drinks", "drinks"),
+                    categoryButton(
+                        FontAwesomeIcons.solidLemon, "Fruits", "fruits")
                   ],
                 ),
               ],
             ),
           ),
           Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.purple.shade200,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 95,
-                          height: 95,
-                          child: Image.asset("assets/Soup_PNG_Clipart-515.png"),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Column(
-                                children: [
-                                  Text(
-                                    "Soup1",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20),
-                                  ),
-                                  Container(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 12),
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(12)),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        "25 £ ",
-                                        style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              IconButton(
-                                  onPressed: () {},
-                                  icon: FaIcon(
-                                    FontAwesomeIcons.heart,
-                                    color: Colors.red,
-                                  ))
-                            ],
+              child: StreamBuilder(
+            stream:
+                FirebaseFirestore.instance.collection(categoryType).snapshots(),
+            builder:
+                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (!snapshot.hasData) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return GridView.count(
+                crossAxisCount: snapshot.data!.docs.length,
+                children: snapshot.data!.docs.map((document) {
+                  return Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.purple.shade200,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            height: 95,
+                            width: 95,
+                            child: Image.network(document['imageUrl']),
                           ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.purple.shade200,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 95,
-                          height: 95,
-                          child: Image.asset("assets/Soup_PNG_Clipart-515.png"),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Column(
-                                children: [
-                                  Text(
-                                    "Soup1",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20),
-                                  ),
-                                  Container(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 12),
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(12)),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        "25 £ ",
-                                        style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold),
-                                      ),
+                          Padding(
+                            padding: EdgeInsets.all(1),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Column(
+                                  children: [
+                                    Text(
+                                      document['name'],
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              IconButton(
-                                  onPressed: () {},
-                                  icon: FaIcon(
-                                    FontAwesomeIcons.heart,
-                                    color: Colors.red,
-                                  ))
-                            ],
-                          ),
-                        )
-                      ],
+                                    Container(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(12)),
+                                      child: Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: Text(
+                                          document['price'],
+                                          style: TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                IconButton(
+                                    onPressed: () {
+                                      Alert(
+                                        context: context,
+                                        type: AlertType.info,
+                                        title: "Success",
+                                        desc: "Added to favorites",
+                                        buttons: [
+                                          DialogButton(
+                                            color: Colors.purple.shade300,
+                                            child: Text(
+                                              "OK",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 20),
+                                            ),
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            width: 120,
+                                          )
+                                        ],
+                                      ).show();
+                                    },
+                                    icon: FaIcon(
+                                      FontAwesomeIcons.heart,
+                                      color: Colors.red,
+                                    ))
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          )
+                  );
+                }).toList(),
+              );
+            },
+          ))
         ],
       ),
     );
   }
 
-  Widget categoryButton(icon, name) {
+  Widget categoryButton(icon, name, type) {
     return InkWell(
       onTap: () {
-        print("Category");
+        print(type);
+        setState(() {
+          categoryType = type;
+        });
       },
       child: Container(
         decoration: BoxDecoration(
